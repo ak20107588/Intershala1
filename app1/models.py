@@ -28,9 +28,9 @@ class Blog(models.Model):
 class Appointment(models.Model):
     DoctorID=models.ForeignKey("app1.User", on_delete=models.CASCADE)
     PatientID=models.BigIntegerField()
-    FirstName=models.CharField(max_length=250)
-    LastName=models.CharField(max_length=250)
+    DoctorName=models.CharField(max_length=250)
     Speciality=models.CharField(max_length=250)
     AppointDate=models.DateField()
     AppointStart=models.TimeField()
     AppointEnd=models.CharField(max_length=250)
+    PatientName=models.CharField(max_length=250)

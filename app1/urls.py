@@ -3,6 +3,7 @@ from django.urls import path,include
 from .import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .import calendar_api
 
 urlpatterns = [
    path('',views.login),
@@ -28,7 +29,9 @@ urlpatterns = [
    path('bookappoint/appointmentdetail/<int:UserID>',views.appointmentdetail),
    path('appointdetail',views.appointdetail),
    path('errormsg',views.errormsg),
-   path('drappoint',views.drappoint)
+   path('drappoint',views.drappoint),
+   path('get_googlecalendar',calendar_api.get_google_calendar_service),
+   path('create_calendar_event',calendar_api.create_calendar_event)
    
    
   

@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 import pytz
+from .calendar_api import create_calendar_event
 
 
 
@@ -358,6 +359,7 @@ def appointmentdetail(request,UserID):
     # if Appointment.objects.filter(DoctorID_id=data.UserID).filter(PatientID=data.UserID).exists():
     if Appointment.objects.filter(DoctorID_id=data.UserID).filter(PatientID=data3):
         user2=(request.session.get('UserID'))
+        
         data3=User.objects.all()
         data1=Appointment.objects.filter(PatientID=user2)
     
@@ -387,6 +389,7 @@ def appointmentdetail(request,UserID):
         start_time = datetime.strptime(start_time_str, '%H:%M',).time()
 
 
+
         #Appoint End Time
         # end_datetime = datetime.combine(AppointDate, start_time) + timedelta(minutes=45)
         # AppointEnd = end_datetime.time()
@@ -395,31 +398,18 @@ def appointmentdetail(request,UserID):
         end_time = end_datetime.time().strftime('%I:%M %p')
         AppointEnd=end_time
 
-        a=Appointment(Speciality=Speciality,FirstName=user.FirstName,LastName=user.LastName ,AppointDate=AppointDate,AppointStart=start_time,AppointEnd=AppointEnd,DoctorID_id=user.UserID,PatientID=user2)   
+        firstname=(request.session.get('FirstName'))
+        lastname=(request.session.get('LastName'))
+
+        a=Appointment(Speciality=Speciality,DoctorName=user.FirstName + " "+ user.LastName,PatientName=firstname + " "+ lastname, AppointDate=AppointDate,AppointStart=start_time,AppointEnd=AppointEnd,DoctorID_id=user.UserID,PatientID=user2)   
 
         a.save()
-
-
-        # Calculate end time
-        # end_time = start_time + timedelta(minutes=45)
-
-        # # Create event on Google Calendar
-        # event_summary = f"Appointment with Dr. {user.FirstName} {user.LastName}"
-        # event_start_time = f"{AppointDate}T{AppointStart}"
-        # event_end_time = f"{AppointDate}T{AppointEnd}"
-        # event_id = create_calendar_event(event_summary, event_start_time, event_end_time)
-
-        
-
-
-
-
 
         b=Appointment.objects.filter(PatientID=user.UserID)
 
         request.session['PatientID']=a.PatientID
         request.session['Speciality']=a.Speciality
-        request.session['AppointDate']=AppointDate
+        request.session['AppointDate']=a.AppointDate
         request.session['AppointStart']=a.AppointStart
 
         request.session['formatstart']=AppointStart
@@ -435,48 +425,12 @@ def appointmentdetail(request,UserID):
         data1=Appointment.objects.filter(PatientID=user2)
         
 
-        
+        event_id = create_calendar_event(user.FirstName + " "+ user.LastName,a.AppointDate, a.AppointStart, a.AppointEnd)
 
-        return render(request,'appointdetail.html',{'Data':b,'Result':user,'Data':data1 })
+        return render(request, 'appointment_confirmation.html', {'event_id': event_id, 'appointment': a})
 
+        # return render(request,'appointdetail.html',{'Data':b,'Result':user,'Data':data1 })
 
-
-SCOPES = ['https://www.googleapis.com/auth/calendar']
-
-# def create_calendar_event(summary, date, start_time, end_time):
-#     creds = None
-#     token_file = 'path/to/your/token.json'  # JSON file
-
-#     if token_file and os.path.exists(token_file):
-#         creds = Credentials.from_authorized_user_file(token_file, SCOPES)
-    
-#     if not creds or not creds.valid:
-#         if creds and creds.expired and creds.refresh_token:
-#             creds.refresh(Request())
-#         else:
-#             flow = InstalledAppFlow.from_client_secrets_file('path/to/your/credentials.json', SCOPES)
-#             creds = flow.run_local_server(port=0)
-#         with open(token_file, 'w') as token:
-#             token.write(creds.to_json())
-
-#     service = build('calendar', 'v3', credentials=creds)
-
-#     # Define event details
-#     event = {
-#         'summary': summary,
-#         'start': {
-#             'dateTime': start_time,
-#             'timeZone': 'Your_Time_Zone',  # e.g., 'America/New_York'
-#         },
-#         'end': {
-#             'dateTime': end_time,
-#             'timeZone': 'Your_Time_Zone',
-#         },
-#     }
-
-#     # Create the event
-#     event = service.events().insert(calendarId='primary', body=event).execute()
-#     return event['id']
 
 def detailapoint(request):
 
@@ -493,12 +447,8 @@ def drappoint(request):
     user2=(request.session.get('UserID'))
     data=User.objects.all()
     data1=Appointment.objects.filter(DoctorID_id=user2)
-    data4=User.objects.filter(UserID=data1.PatientID)
-    # data4=Appointment.objects.filter(PatientID=)
-    # data3=User.objects.filter(UserID=data4.PatientID)
-    # data1=Appointment.objects.filter(PatientID=data3.UserID)
 
-    return render(request,'drappoint.html',{'Data':data1,'Data1':data4})
+    return render(request,'drappoint.html',{'Data':data1})
     # else:
     #     return render(request,'doctor.html')
 
